@@ -17,6 +17,19 @@ Welcome to the ultimate native Android companion application for the **FIFA Worl
 9. **Instant Favorite System & Notifications**: Bookmark teams to prioritize upcoming fixtures, and receive simulated high-importance notifications for kickoffs, goals, cards, and results!
 10. **Centralized Room Persistence**: Offline-first caching using Room, utilizing sealed state structures for a seamless Material 3 Dark theme experience.
 
+## 📱 App User Guide
+
+Here is how you can get the most out of the app features:
+
+1. **Navigate the CST Schedule:** The main schedule is grouped chronologically by Central Time dates.
+2. **Filter by Stage:** Use the horizontal stage tabs at the top (e.g., *Group Stage, Round of 32, Quarterfinals*) to instantly narrow down matches.
+3. **Quick Search:** Tap the search bar to find matches by team name, venue, group letter, or stage.
+4. **Bookmark Favorites:** Tap the **Star icon** next to any match. Toggle the **"Favorites Only"** switch to filter the schedule to only show your favorite matches. Bookmarked matches will also trigger notification alerts for goals, cards, and full-time updates!
+5. **Sync to Device Calendar:** Tap the **Calendar icon** to immediately schedule a calendar reminder on your device, auto-configured with the correct local time.
+6. **Inspect Standings:** Switch to the **Standings** tab at the bottom to view live group tables. Tap on any team to see their custom team schedule page.
+7. **Track Knockouts:** Switch to the **Brackets** tab to see a visual tree of the tournament progression.
+8. **Inspect Match Details & Gemini Analysis:** Tap any match card to open the Details window. Tap **Analyze** to fetch Gemini-powered tactical insights and predictions. You can also paste your own Google AI Studio API key directly into the input field at the bottom of the details window to activate the AI analysis!
+
 ---
 
 ## 🌎 Live Scores & AI Tactical Guidance
