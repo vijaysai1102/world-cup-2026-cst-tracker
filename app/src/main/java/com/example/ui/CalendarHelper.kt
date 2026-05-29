@@ -19,13 +19,15 @@ object CalendarHelper {
             "FIFA World Cup 2026 ${match.stage ?: "Knockout"} match. Venue: ${match.venue}"
         }
 
-        val beginTime = Calendar.getInstance()
+        val beginTime = Calendar.getInstance(java.util.TimeZone.getTimeZone("America/New_York"))
         try {
             // E.g. date: "Thu, Jun 11" and timeET: "15:00"
             // We append 2026 as the tournament year.
             val cleanDate = match.date.replace(Regex("""\s+cont\..*"""), "").trim()
             val dateStr = "$cleanDate, 2026 ${match.timeET}" 
-            val format = SimpleDateFormat("EEE, MMM d, yyyy HH:mm", Locale.US)
+            val format = SimpleDateFormat("EEE, MMM d, yyyy HH:mm", Locale.US).apply {
+                timeZone = java.util.TimeZone.getTimeZone("America/New_York")
+            }
             val dateObj = format.parse(dateStr)
             if (dateObj != null) {
                 // Calendar ET time parsed successfully (subtraction happens for CST if needed)
