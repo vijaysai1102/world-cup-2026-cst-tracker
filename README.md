@@ -45,28 +45,32 @@ The application is designed with a hybrid dual-engine scoring architecture:
 
 ---
 
-## 📦 Export, Build, and Install Instructions
+## 📦 Build & Installation Instructions
 
-### How to download and install this app from GitHub
+### 📲 Install Pre-Compiled APK Directly
+A fully compiled and ready-to-install build of the application is included directly in this repository:
+👉 **[world-cup-2026-tracker.apk](world-cup-2026-tracker.apk)**
 
-This project is a standard Android Studio project written in modern **Kotlin** and **Jetpack Compose**. To make the APK download-ready for others right from your GitHub repository:
+#### How to Install on your Device:
+1. Open this GitHub repository in the web browser on your Android device.
+2. Tap on the **[world-cup-2026-tracker.apk](world-cup-2026-tracker.apk)** file.
+3. Click the **"Download"** or **"View Raw"** button to download the APK binary.
+4. Once downloaded, tap the file in your device's notification bar or File Manager to install it.
+   > [!NOTE]
+   > You may need to toggle on **"Install from Unknown Sources"** in your Android device's security settings to install custom APKs.
 
-#### Step 1: Push the Code to GitHub
-- Open the settings/toolbar in **Google AI Studio**.
-- Click the **GitHub** icon to link your account and push this clean, compiled codebase directly into a new repository (e.g., `WorldCup2026-CST-Android`).
+---
 
-#### Step 2: Build a Release APK (or Debug APK)
-To let friends download and install the app on their phone without needing developer tools:
-1. Clone the repository in **Android Studio** on your computer.
-2. Select **Build > Build Bundle(s) / APK(s) > Build APK(s)** in the top menu.
-3. Locate the generated executable file (usually found at `app/build/outputs/apk/debug/app-debug.apk`).
-
-#### Step 3: Make it Downloadable on GitHub
-1. Navigate to your GitHub repository in your browser.
-2. Click **Releases > Create a new release**.
-3. Fill out the version details (e.g., `v1.0.0`) and description.
-4. Drag and drop your built **`app-debug.apk`** into the "Attach binaries" box at the bottom.
-5. Publish the release! Now anyone can download the APK file from their mobile browser, enable "Install from Unknown Sources" on their device settings, and install your World Cup CST tracker instantly!
+### 💻 Build and Run from Source (Android Studio)
+To import and modify the code yourself:
+1. Clone this repository to your local machine:
+   ```bash
+   git clone https://github.com/vijaysai1102/world-cup-2026-cst-tracker.git
+   ```
+2. Open Android Studio (Koala 2024.1 or newer recommended).
+3. Select **File > Open** and choose the `world-cup-2026` project directory.
+4. Let the Gradle project sync complete (it will automatically download Gradle 8.10.2 and set up dependencies).
+5. Run the app on your physical device or emulator using the green **Run (play triangle) button** `▶` in the top toolbar.
 
 ---
 
@@ -79,3 +83,4 @@ To let friends download and install the app on their phone without needing devel
 * **Material Symbols** - Colorful and modern contextual icons.
 
 Enjoy tracking the World Cup 2026 in CST! ⚽🏆🌎
+
