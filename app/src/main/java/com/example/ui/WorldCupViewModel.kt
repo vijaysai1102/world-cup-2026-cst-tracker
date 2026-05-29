@@ -107,6 +107,18 @@ class WorldCupViewModel(application: Application) : AndroidViewModel(application
     // --- Gemini AI Tactical Analysis Hooks ---
     val geminiAnalysis = MutableStateFlow<String?>(null)
     val isGeminiLoading = MutableStateFlow(false)
+    val customGeminiKey = MutableStateFlow("")
+
+    init {
+        val prefs = application.getSharedPreferences("api_settings", android.content.Context.MODE_PRIVATE)
+        customGeminiKey.value = prefs.getString("custom_gemini_key", "") ?: ""
+    }
+
+    fun saveCustomGeminiKey(key: String) {
+        customGeminiKey.value = key
+        val prefs = getApplication<Application>().getSharedPreferences("api_settings", android.content.Context.MODE_PRIVATE)
+        prefs.edit().putString("custom_gemini_key", key).apply()
+    }
 
     fun fetchMatchPrediction(match: Match) {
         viewModelScope.launch {
@@ -119,7 +131,8 @@ class WorldCupViewModel(application: Application) : AndroidViewModel(application
                 group = match.group,
                 venue = match.venue,
                 status = match.status,
-                score = scoreStr
+                score = scoreStr,
+                customApiKey = customGeminiKey.value
             )
             geminiAnalysis.value = response
             isGeminiLoading.value = false

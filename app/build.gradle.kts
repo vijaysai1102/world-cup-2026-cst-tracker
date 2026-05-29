@@ -58,8 +58,8 @@ android {
   testOptions { unitTests { isIncludeAndroidResources = true } }
 }
 
-// Configure the Secrets Gradle Plugin to use .env and .env.example files
-// to match the convention used in Web projects.
+// Configure the Secrets Gradle Plugin to use the .env and .env.example files
+// written during the settings.gradle.kts initialization phase.
 secrets {
   propertiesFileName = ".env"
   defaultPropertiesFileName = ".env.example"
