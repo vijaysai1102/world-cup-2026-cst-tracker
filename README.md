@@ -19,16 +19,25 @@ Welcome to the ultimate native Android companion application for the **FIFA Worl
 
 ---
 
-## 🌎 Live Scores & Auto-Updater Guidance
+## 🌎 Live Scores & AI Tactical Guidance
 
-### Will the app auto-update during the tournament?
+### 🤖 Google Gemini AI Tactical Analyst (New!)
+The application features a built-in **Google Gemini AI Tactical Analyst**. In any Match details overlay dialog, you can trigger real-time expert insights, tournament predictions, and team battlegrounds generated directly by Google's `gemini-3.5-flash` model using your Gemini API key!
 
-Yes! The app is designed with a hybrid dual-engine architecture:
-- **Offline / Simulation Mode (Default)**: If no football API key is supplied, a built-in background task advances match minutes and generates soccer events (such as goals, red cards, and full-time updates) for ongoing live matches in the tournament schedule.
+#### To activate Gemini AI features:
+1. Since you built the app in **Google AI Studio**, you already have a Google Gemini API Key!
+2. Open **AI Studio**, click the **Secrets panel** on the left-hand sidebar on your project space.
+3. Verify that `GEMINI_API_KEY` is set to your Google API Key.
+4. Open any Match in the app and tap **Analyze**. The model will generate customized tactical and prediction overviews in real-time!
+
+---
+
+### ⚽ Live Match Scores and Sports Updates
+The application is designed with a hybrid dual-engine scoring architecture:
+- **Offline / Simulation Mode (Default)**: If no live API key is supplied, a built-in background task advances match minutes and generates soccer events (such as goals, red cards, and full-time updates) for ongoing live matches in the tournament schedule.
 - **RapidAPI Football Score Sync**: To consume real-world tournament live scores from the actual World Cup stadiums, the app is prepared with integrated Retrofit network interfaces targeting `api-sports.io`.
 
 #### To activate real-world scores:
-
 1. Create a free API key at [API-SPORTS](https://api-sports.io/) or RapidAPI.
 2. Open **AI Studio**, navigate to the **Secrets panel** on the left-hand sidebar.
 3. Add a new key called `FOOTBALL_API_KEY` and paste your secret token.

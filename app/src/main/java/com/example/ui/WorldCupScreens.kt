@@ -172,7 +172,11 @@ fun MainScreenContainer(
             selectedInspectMatch?.let { match ->
                 MatchDetailsDialog(
                     match = match,
-                    onDismiss = { selectedInspectMatch = null },
+                    viewModel = viewModel,
+                    onDismiss = {
+                        viewModel.clearGeminiAnalysis()
+                        selectedInspectMatch = null
+                    },
                     onFavoriteToggle = { viewModel.toggleFavorite(match.id, !match.isFavorite) }
                 )
             }
@@ -1277,10 +1281,14 @@ fun BracketMatchCard(
 @Composable
 fun MatchDetailsDialog(
     match: Match,
+    viewModel: WorldCupViewModel,
     onDismiss: () -> Unit,
     onFavoriteToggle: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val geminiAnalysis by viewModel.geminiAnalysis.collectAsState()
+    val isGeminiLoading by viewModel.isGeminiLoading.collectAsState()
+
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
@@ -1383,6 +1391,86 @@ fun MatchDetailsDialog(
                             fontWeight = FontWeight.Medium,
                             color = if (match.status == "LIVE") LiveRed else TextMuted
                         )
+                    }
+                }
+
+                // --- Gemini AI Tactical Card ---
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = CardNavyLight),
+                    shape = RoundedCornerShape(10.dp),
+                    border = BorderStroke(1.dp, GoldAccent.copy(alpha = 0.3f)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Bolt,
+                                    contentDescription = "AI",
+                                    tint = GoldAccent,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Text(
+                                    text = "GEMINI TACTICAL ANALYSIS",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = GoldAccent
+                                )
+                            }
+                            if (geminiAnalysis == null && !isGeminiLoading) {
+                                Button(
+                                    onClick = { viewModel.fetchMatchPrediction(match) },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = GoldAccent,
+                                        contentColor = DeepNavy
+                                    ),
+                                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 2.dp),
+                                    modifier = Modifier.height(26.dp)
+                                ) {
+                                    Text("Analyze", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        }
+
+                        if (isGeminiLoading) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(14.dp),
+                                    color = GoldAccent,
+                                    strokeWidth = 2.dp
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Querying Gemini AI...", fontSize = 11.sp, color = TextMuted)
+                            }
+                        } else if (geminiAnalysis != null) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = geminiAnalysis!!,
+                                fontSize = 11.sp,
+                                color = TextWhite,
+                                lineHeight = 16.sp
+                            )
+                        } else {
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = "Use your Google AI Studio API key to instantly generate direct match assessment and predictions.",
+                                fontSize = 11.sp,
+                                color = TextMuted,
+                                lineHeight = 14.sp
+                            )
+                        }
                     }
                 }
 

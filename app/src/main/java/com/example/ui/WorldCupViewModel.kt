@@ -104,6 +104,33 @@ class WorldCupViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
+    // --- Gemini AI Tactical Analysis Hooks ---
+    val geminiAnalysis = MutableStateFlow<String?>(null)
+    val isGeminiLoading = MutableStateFlow(false)
+
+    fun fetchMatchPrediction(match: Match) {
+        viewModelScope.launch {
+            isGeminiLoading.value = true
+            geminiAnalysis.value = null
+            val scoreStr = if (match.status != "UPCOMING") "${match.team1Score ?: 0} - ${match.team2Score ?: 0}" else "N/A"
+            val response = com.example.data.GeminiService.getMatchAnalysis(
+                team1 = match.team1,
+                team2 = match.team2,
+                group = match.group,
+                venue = match.venue,
+                status = match.status,
+                score = scoreStr
+            )
+            geminiAnalysis.value = response
+            isGeminiLoading.value = false
+        }
+    }
+
+    fun clearGeminiAnalysis() {
+        geminiAnalysis.value = null
+        isGeminiLoading.value = false
+    }
+
     fun triggerApiRefresh(apiKey: String) {
         viewModelScope.launch {
             repository.refreshLiveScores(apiKey)
