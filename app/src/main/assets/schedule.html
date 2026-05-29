@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIFA World Cup 2026 – Schedule CST</title>
+</head>
+<body>
+<script>
+const matches = [
+  // June 11
+  {group:'A', t1:'Mexico',t2:'South Africa',date:'Thu, Jun 11',timeET:'15:00',venue:'Estadio Azteca, Mexico City'},
+  {group:'A', t1:'South Korea',t2:'Czechia',date:'Thu, Jun 11',timeET:'22:00',venue:'Estadio Akron, Zapopan'},
+  // June 12
+  {group:'B', t1:'Canada',t2:'Bosnia & Herz.',date:'Fri, Jun 12',timeET:'15:00',venue:'BMO Field, Toronto'},
+  {group:'D', t1:'USA',t2:'Paraguay',date:'Fri, Jun 12',timeET:'21:00',venue:'SoFi Stadium, Inglewood'},
+  // June 13
+  {group:'B', t1:'Qatar',t2:'Switzerland',date:'Sat, Jun 13',timeET:'15:00',venue:"Levi's Stadium, Santa Clara"},
+  {group:'C', t1:'Brazil',t2:'Morocco',date:'Sat, Jun 13',timeET:'18:00',venue:'MetLife Stadium, NJ'},
+  {group:'C', t1:'Haiti',t2:'Scotland',date:'Sat, Jun 13',timeET:'21:00',venue:'Gillette Stadium, Foxborough'},
+  // June 14
+  {group:'D', t1:'Australia',t2:'Türkiye',date:'Sun, Jun 14',timeET:'00:00',venue:'BC Place, Vancouver'},
+  {group:'E', t1:'Germany',t2:'Curaçao',date:'Sun, Jun 14',timeET:'13:00',venue:'NRG Stadium, Houston'},
+  {group:'F', t1:'Netherlands',t2:'Japan',date:'Sun, Jun 14',timeET:'16:00',venue:"AT&T Stadium, Arlington"},
+  {group:'E', t1:'Ivory Coast',t2:'Ecuador',date:'Sun, Jun 14',timeET:'19:00',venue:'Lincoln Financial Field, Philadelphia'},
+  {group:'F', t1:'Sweden',t2:'Tunisia',date:'Sun, Jun 14',timeET:'22:00',venue:'Estadio BBVA, Monterrey'},
+  // June 15
+  {group:'H', t1:'Spain',t2:'Cape Verde',date:'Mon, Jun 15',timeET:'12:00',venue:'Mercedes-Benz Stadium, Atlanta'},
+  {group:'G', t1:'Belgium',t2:'Egypt',date:'Mon, Jun 15',timeET:'15:00',venue:'Lumen Field, Seattle'},
+  {group:'H', t1:'Saudi Arabia',t2:'Uruguay',date:'Mon, Jun 15',timeET:'18:00',venue:'Hard Rock Stadium, Miami'},
+  {group:'G', t1:'Iran',t2:'New Zealand',date:'Mon, Jun 15',timeET:'21:00',venue:'SoFi Stadium, Inglewood'},
+  // June 16
+  {group:'I', t1:'France',t2:'Senegal',date:'Tue, Jun 16',timeET:'15:00',venue:'MetLife Stadium, NJ'},
+  {group:'I', t1:'Iraq',t2:'Norway',date:'Tue, Jun 16',timeET:'18:00',venue:'Gillette Stadium, Foxborough'},
+  {group:'J', t1:'Argentina',t2:'Algeria',date:'Tue, Jun 16',timeET:'21:00',venue:'Arrowhead Stadium, Kansas City'},
+  // June 17
+  {group:'J', t1:'Austria',t2:'Jordan',date:'Wed, Jun 17',timeET:'00:00',venue:"Levi's Stadium, Santa Clara"},
+  {group:'K', t1:'Portugal',t2:'DR Congo',date:'Wed, Jun 17',timeET:'13:00',venue:'NRG Stadium, Houston'},
+  {group:'L', t1:'England',t2:'Croatia',date:'Wed, Jun 17',timeET:'16:00',venue:"AT&T Stadium, Arlington"},
+  {group:'L', t1:'Ghana',t2:'Panama',date:'Wed, Jun 17',timeET:'19:00',venue:'BMO Field, Toronto'},
+  {group:'K', t1:'Uzbekistan',t2:'Colombia',date:'Wed, Jun 17',timeET:'22:00',venue:'Estadio Azteca, Mexico City'},
+  // June 18
+  {group:'A', t1:'Czechia',t2:'South Africa',date:'Thu, Jun 18',timeET:'12:00',venue:'Mercedes-Benz Stadium, Atlanta'},
+  {group:'B', t1:'Switzerland',t2:'Bosnia & Herz.',date:'Thu, Jun 18',timeET:'15:00',venue:'SoFi Stadium, Inglewood'},
+  {group:'B', t1:'Canada',t2:'Qatar',date:'Thu, Jun 18',timeET:'18:00',venue:'BC Place, Vancouver'},
+  {group:'A', t1:'Mexico',t2:'South Korea',date:'Thu, Jun 18',timeET:'21:00',venue:'Estadio Akron, Zapopan'},
+  // June 19
+  {group:'D', t1:'USA',t2:'Australia',date:'Fri, Jun 19',timeET:'15:00',venue:'Lumen Field, Seattle'},
+  {group:'C', t1:'Scotland',t2:'Morocco',date:'Fri, Jun 19',timeET:'18:00',venue:'Gillette Stadium, Foxborough'},
+  {group:'C', t1:'Brazil',t2:'Haiti',date:'Fri, Jun 19',timeET:'20:30',venue:'Lincoln Financial Field, Philadelphia'},
+  {group:'D', t1:'Türkiye',t2:'Paraguay',date:'Fri, Jun 19',timeET:'23:00',venue:"Levi's Stadium, Santa Clara"},
+  // June 20
+  {group:'F', t1:'Netherlands',t2:'Sweden',date:'Sat, Jun 20',timeET:'13:00',venue:'NRG Stadium, Houston'},
+  {group:'E', t1:'Germany',t2:'Ivory Coast',date:'Sat, Jun 20',timeET:'16:00',venue:'BMO Field, Toronto'},
+  {group:'E', t1:'Ecuador',t2:'Curaçao',date:'Sat, Jun 20',timeET:'20:00',venue:'Arrowhead Stadium, Kansas City'},
+  // June 21
+  {group:'F', t1:'Tunisia',t2:'Japan',date:'Sun, Jun 21',timeET:'00:00',venue:'Estadio BBVA, Monterrey'},
+  {group:'H', t1:'Spain',t2:'Saudi Arabia',date:'Sun, Jun 21',timeET:'12:00',venue:'Mercedes-Benz Stadium, Atlanta'},
+  {group:'G', t1:'Belgium',t2:'Iran',date:'Sun, Jun 21',timeET:'15:00',venue:'SoFi Stadium, Inglewood'},
+  {group:'H', t1:'Uruguay',t2:'Cape Verde',date:'Sun, Jun 21',timeET:'18:00',venue:'Hard Rock Stadium, Miami'},
+  {group:'G', t1:'New Zealand',t2:'Egypt',date:'Sun, Jun 21',timeET:'21:00',venue:'BC Place, Vancouver'},
+  // June 22
+  {group:'J', t1:'Argentina',t2:'Austria',date:'Mon, Jun 22',timeET:'13:00',venue:"AT&T Stadium, Arlington"},
+  {group:'I', t1:'France',t2:'Iraq',date:'Mon, Jun 22',timeET:'17:00',venue:'Lincoln Financial Field, Philadelphia'},
+  {group:'I', t1:'Norway',t2:'Senegal',date:'Mon, Jun 22',timeET:'20:00',venue:'MetLife Stadium, NJ'},
+  {group:'J', t1:'Jordan',t2:'Algeria',date:'Mon, Jun 22',timeET:'23:00',venue:"Levi's Stadium, Santa Clara"},
+  // June 23
+  {group:'K', t1:'Portugal',t2:'Uzbekistan',date:'Tue, Jun 23',timeET:'13:00',venue:'NRG Stadium, Houston'},
+  {group:'L', t1:'England',t2:'Ghana',date:'Tue, Jun 23',timeET:'16:00',venue:"AT&T Stadium, Arlington"},
+  {group:'L', t1:'Croatia',t2:'Panama',date:'Tue, Jun 23',timeET:'19:00',venue:'Arrowhead Stadium, Kansas City'},
+  {group:'K', t1:'DR Congo',t2:'Colombia',date:'Tue, Jun 23',timeET:'22:00',venue:'Estadio Azteca, Mexico City'},
+  // June 24
+  {group:'A', t1:'South Africa',t2:'South Korea',date:'Wed, Jun 24',timeET:'13:00',venue:'Estadio Akron, Zapopan'},
+  {group:'A', t1:'Mexico',t2:'Czechia',date:'Wed, Jun 24',timeET:'13:00',venue:'Estadio Azteca, Mexico City'},
+  {group:'B', t1:'Switzerland',t2:'Canada',date:'Wed, Jun 24',timeET:'16:00',venue:'BC Place, Vancouver'},
+  {group:'B', t1:'Bosnia & Herz.',t2:'Qatar',date:'Wed, Jun 24',timeET:'16:00',venue:"Levi's Stadium, Santa Clara"},
+  // June 25
+  {group:'C', t1:'Morocco',t2:'Haiti',date:'Thu, Jun 25',timeET:'13:00',venue:'Gillette Stadium, Foxborough'},
+  {group:'C', t1:'Scotland',t2:'Brazil',date:'Thu, Jun 25',timeET:'13:00',venue:'MetLife Stadium, NJ'},
+  {group:'D', t1:'Paraguay',t2:'Australia',date:'Thu, Jun 25',timeET:'16:00',venue:'SoFi Stadium, Inglewood'},
+  {group:'D', t1:'Türkiye',t2:'USA',date:'Thu, Jun 25',timeET:'16:00',venue:'Lumen Field, Seattle'},
+  // June 26
+  {group:'E', t1:'Curaçao',t2:'Ivory Coast',date:'Fri, Jun 26',timeET:'13:00',venue:'Hard Rock Stadium, Miami'},
+  {group:'E', t1:'Ecuador',t2:'Germany',date:'Fri, Jun 26',timeET:'13:00',venue:'MetLife Stadium, NJ'},
+  {group:'F', t1:'Japan',t2:'Sweden',date:'Fri, Jun 26',timeET:'16:00',venue:'NRG Stadium, Houston'},
+  {group:'F', t1:'Tunisia',t2:'Netherlands',date:'Fri, Jun 26',timeET:'16:00',venue:'Estadio BBVA, Monterrey'},
+  // June 27
+  {group:'G', t1:'Egypt',t2:'Belgium',date:'Sat, Jun 27',timeET:'13:00',venue:'Mercedes-Benz Stadium, Atlanta'},
+  {group:'G', t1:'New Zealand',t2:'Iran',date:'Sat, Jun 27',timeET:'13:00',venue:'SoFi Stadium, Inglewood'},
+  {group:'H', t1:'Cape Verde',t2:'Spain',date:'Sat, Jun 27',timeET:'16:00',venue:'Lumen Field, Seattle'},
+  {group:'H', t1:'Uruguay',t2:'Saudi Arabia',date:'Sat, Jun 27',timeET:'16:00',venue:'Hard Rock Stadium, Miami'},
+  // June 27 cont.
+  {group:'I', t1:'Senegal',t2:'Iraq',date:'Sat, Jun 27',timeET:'19:00',venue:'Lincoln Financial Field, Philadelphia'},
+  {group:'I', t1:'Norway',t2:'France',date:'Sat, Jun 27',timeET:'19:00',venue:'Gillette Stadium, Foxborough'},
+  {group:'J', t1:'Algeria',t2:'Argentina',date:'Sat, Jun 27',timeET:'22:00',venue:"AT&T Stadium, Arlington"},
+  {group:'J', t1:'Jordan',t2:'Austria',date:'Sat, Jun 27',timeET:'22:00',venue:'Arrowhead Stadium, Kansas City'},
+  // June 27 last groups
+  {group:'K', t1:'Colombia',t2:'Portugal',date:'Sun, Jun 27',timeET:'01:00',venue:'NRG Stadium, Houston'},
+  {group:'K', t1:'Uzbekistan',t2:'DR Congo',date:'Sun, Jun 27',timeET:'01:00',venue:'Estadio Azteca, Mexico City'},
+  {group:'L', t1:'Panama',t2:'England',date:'Sun, Jun 27',timeET:'04:00',venue:'Arrowhead Stadium, Kansas City'},
+  {group:'L', t1:'Ghana',t2:'Croatia',date:'Sun, Jun 27',timeET:'04:00',venue:'BMO Field, Toronto'},
+  // KNOCKOUT ROUNDS (TBD matchups)
+  {group:'R32', t1:'W Group A',t2:'3rd Best',date:'Sat, Jun 28',timeET:'12:00',venue:'TBD',stage:'Round of 32'},
+  {group:'R32', t1:'W Group B',t2:'3rd Best',date:'Sat, Jun 28',timeET:'16:00',venue:'TBD',stage:'Round of 32'},
+  {group:'R32', t1:'W Group C',t2:'3rd Best',date:'Sun, Jun 29',timeET:'12:00',venue:'TBD',stage:'Round of 32'},
+  {group:'R32', t1:'W Group D',t2:'3rd Best',date:'Sun, Jun 29',timeET:'16:00',venue:'TBD',stage:'Round of 32'},
+  {group:'R32', t1:'W Group E',t2:'3rd Best',date:'Mon, Jun 30',timeET:'12:00',venue:'TBD',stage:'Round of 32'},
+  {group:'R32', t1:'W Group F',t2:'3rd Best',date:'Mon, Jun 30',timeET:'16:00',venue:'TBD',stage:'Round of 32'},
+  {group:'R32', t1:'W Group G',t2:'3rd Best',date:'Tue, Jul 1',timeET:'12:00',venue:'TBD',stage:'Round of 32'},
+  {group:'R32', t1:'W Group H',t2:'3rd Best',date:'Tue, Jul 1',timeET:'16:00',venue:'TBD',stage:'Round of 32'},
+  {group:'R32', t1:'W Group I',t2:'3rd Best',date:'Wed, Jul 2',timeET:'12:00',venue:'TBD',stage:'Round of 32'},
+  {group:'R32', t1:'W Group J',t2:'3rd Best',date:'Wed, Jul 2',timeET:'16:00',venue:'TBD',stage:'Round of 32'},
+  {group:'R32', t1:'W Group K',t2:'3rd Best',date:'Thu, Jul 3',timeET:'12:00',venue:'TBD',stage:'Round of 32'},
+  {group:'R32', t1:'W Group L',t2:'3rd Best',date:'Thu, Jul 3',timeET:'16:00',venue:'TBD',stage:'Round of 32'},
+  // Round of 16
+  {group:'R16', t1:'R32 Winner 1',t2:'R32 Winner 2',date:'Sat, Jul 4',timeET:'12:00',venue:'TBD',stage:'Round of 16'},
+  {group:'R16', t1:'R32 Winner 3',t2:'R32 Winner 4',date:'Sat, Jul 4',timeET:'16:00',venue:'TBD',stage:'Round of 16'},
+  {group:'R16', t1:'R32 Winner 5',t2:'R32 Winner 6',date:'Sun, Jul 5',timeET:'12:00',venue:'TBD',stage:'Round of 16'},
+  {group:'R16', t1:'R32 Winner 7',t2:'R32 Winner 8',date:'Sun, Jul 5',timeET:'16:00',venue:'TBD',stage:'Round of 16'},
+  {group:'R16', t1:'R32 Winner 9',t2:'R32 Winner 10',date:'Mon, Jul 6',timeET:'12:00',venue:'TBD',stage:'Round of 16'},
+  {group:'R16', t1:'R32 Winner 11',t2:'R32 Winner 12',date:'Mon, Jul 6',timeET:'16:00',venue:'TBD',stage:'Round of 16'},
+  {group:'R16', t1:'R32 Winner 13',t2:'R32 Winner 14',date:'Tue, Jul 7',timeET:'12:00',venue:'TBD',stage:'Round of 16'},
+  {group:'R16', t1:'R32 Winner 15',t2:'R32 Winner 16',date:'Tue, Jul 7',timeET:'16:00',venue:'TBD',stage:'Round of 16'},
+  // QF
+  {group:'QF', t1:'QF TBD',t2:'QF TBD',date:'Thu, Jul 9',timeET:'15:00',venue:'TBD',stage:'Quarterfinal'},
+  {group:'QF', t1:'QF TBD',t2:'QF TBD',date:'Fri, Jul 10',timeET:'15:00',venue:'TBD',stage:'Quarterfinal'},
+  {group:'QF', t1:'QF TBD',t2:'QF TBD',date:'Sat, Jul 11',timeET:'12:00',venue:'TBD',stage:'Quarterfinal'},
+  {group:'QF', t1:'QF TBD',t2:'QF TBD',date:'Sat, Jul 11',timeET:'16:00',venue:'TBD',stage:'Quarterfinal'},
+  // SF
+  {group:'SF', t1:'SF TBD',t2:'SF TBD',date:'Tue, Jul 14',timeET:'15:00',venue:'TBD',stage:'Semifinal'},
+  {group:'SF', t1:'SF TBD',t2:'SF TBD',date:'Wed, Jul 15',timeET:'15:00',venue:'TBD',stage:'Semifinal'},
+  // 3rd
+  {group:'3P', t1:'3P TBD',t2:'3P TBD',date:'Sat, Jul 18',timeET:'15:00',venue:'TBD',stage:'3rd Place'},
+  // Final
+  {group:'FIN', t1:'Champion TBD',t2:'Finalist TBD',date:'Sun, Jul 19',timeET:'15:00',venue:'MetLife Stadium, NJ',stage:'🏆 FINAL'}
+];
+</script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+package com.example.ui
+
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.data.AppDatabase
+import com.example.data.Match
+import com.example.data.MatchRepository
+import com.example.data.StandingTeam
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+
+class WorldCupViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val db = AppDatabase.getDatabase(application)
+    private val repository = MatchRepository(application, db.matchDao())
+
+    val allMatchesFlow: Flow<List<Match>> = repository.allMatches
+    val favoriteMatchesFlow: Flow<List<Match>> = repository.favoriteMatches
+
+    // State indicators
+    val searchQuery = MutableStateFlow("")
+    val activeStage = MutableStateFlow("all") // "all", "group", "r32", "r16", "qf", "sf", "fin"
+    val showOnlyFavorites = MutableStateFlow(false)
+
+    // Current inspected team (for Team Details Sub-screen)
+    val selectedTeam = MutableStateFlow<String?>(null)
+
+    // Match Group Map representing "group fixtures by date"
+    val filteredMatchesGrouped: StateFlow<Map<String, List<Match>>> = combine(
+        allMatchesFlow,
+        searchQuery,
+        activeStage,
+        showOnlyFavorites,
+        selectedTeam
+    ) { matches, query, stage, onlyFavs, teamName ->
+        var filtered = matches
+
+        // 1. Team Detail check
+        if (!teamName.isNullOrEmpty()) {
+            filtered = filtered.filter { 
+                it.team1.contains(teamName, ignoreCase = true) || 
+                it.team2.contains(teamName, ignoreCase = true) 
+            }
+        }
+
+        // 2. Only favorites check
+        if (onlyFavs) {
+            filtered = filtered.filter { it.isFavorite }
+        }
+
+        // 3. Stage filters check
+        if (stage != "all") {
+            filtered = filtered.filter { match ->
+                when (stage) {
+                    "group" -> match.group.length == 1 && match.group[0] in 'A'..'L'
+                    "r32" -> match.group == "R32"
+                    "r16" -> match.group == "R16"
+                    "qf" -> match.group == "QF"
+                    "sf" -> match.group == "SF"
+                    "fin" -> match.group == "3P" || match.group == "FIN"
+                    else -> true
+                }
+            }
+        }
+
+        // 4. Search query check
+        if (query.isNotEmpty()) {
+            filtered = filtered.filter { match ->
+                match.team1.contains(query, ignoreCase = true) ||
+                match.team2.contains(query, ignoreCase = true) ||
+                match.venue.contains(query, ignoreCase = true) ||
+                match.group.contains(query, ignoreCase = true) ||
+                (match.stage != null && match.stage.contains(query, ignoreCase = true))
+            }
+        }
+
+        // Group by Date
+        filtered.groupBy { it.date }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyMap()
+    )
+
+    // Dynamic Standings calculations
+    val groupStandings: StateFlow<Map<String, List<StandingTeam>>> = allMatchesFlow.map { matches ->
+        repository.calculateStandings(matches)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyMap()
+    )
+
+    fun toggleFavorite(matchId: Int, isFav: Boolean) {
+        viewModelScope.launch {
+            repository.toggleFavorite(matchId, isFav)
+        }
+    }
+
+    fun triggerApiRefresh(apiKey: String) {
+        viewModelScope.launch {
+            repository.refreshLiveScores(apiKey)
+        }
+    }
+}

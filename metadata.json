@@ -1,0 +1,6 @@
+{
+  "name": "World Cup 2026",
+  "description": "FIFA World Cup 2026 match schedule, live scores, team pages, favorites, standings, and automated bracket visualizer.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
