@@ -108,16 +108,30 @@ class WorldCupViewModel(application: Application) : AndroidViewModel(application
     val geminiAnalysis = MutableStateFlow<String?>(null)
     val isGeminiLoading = MutableStateFlow(false)
     val customGeminiKey = MutableStateFlow("")
+    val customFootballKey = MutableStateFlow("")
 
     init {
         val prefs = application.getSharedPreferences("api_settings", android.content.Context.MODE_PRIVATE)
         customGeminiKey.value = prefs.getString("custom_gemini_key", "") ?: ""
+        customFootballKey.value = prefs.getString("custom_football_key", "") ?: ""
     }
 
     fun saveCustomGeminiKey(key: String) {
         customGeminiKey.value = key
         val prefs = getApplication<Application>().getSharedPreferences("api_settings", android.content.Context.MODE_PRIVATE)
         prefs.edit().putString("custom_gemini_key", key).apply()
+    }
+
+    fun saveCustomFootballKey(key: String) {
+        val trimmedKey = key.trim()
+        customFootballKey.value = trimmedKey
+        val prefs = getApplication<Application>().getSharedPreferences("api_settings", android.content.Context.MODE_PRIVATE)
+        prefs.edit().putString("custom_football_key", trimmedKey).apply()
+        
+        // Trigger an immediate network scores refresh with the new key
+        if (trimmedKey.isNotBlank()) {
+            triggerApiRefresh(trimmedKey)
+        }
     }
 
     fun fetchMatchPrediction(match: Match) {

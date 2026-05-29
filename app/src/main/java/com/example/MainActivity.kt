@@ -20,11 +20,16 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         
-        // Dynamic live score updates (triggers check for user entered API key in local secrets)
-        val apiKey = try {
-            BuildConfig.FOOTBALL_API_KEY
-        } catch (e: Exception) {
-            ""
+        // Dynamic live score updates (triggers check for user entered API key in local secrets/prefs)
+        val savedFootballKey = viewModel.customFootballKey.value
+        val apiKey = if (savedFootballKey.isNotBlank()) {
+            savedFootballKey
+        } else {
+            try {
+                BuildConfig.FOOTBALL_API_KEY
+            } catch (e: Exception) {
+                ""
+            }
         }
         viewModel.triggerApiRefresh(apiKey)
 

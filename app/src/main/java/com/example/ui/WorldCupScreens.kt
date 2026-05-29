@@ -1289,6 +1289,7 @@ fun MatchDetailsDialog(
     val geminiAnalysis by viewModel.geminiAnalysis.collectAsState()
     val isGeminiLoading by viewModel.isGeminiLoading.collectAsState()
     val customGeminiKey by viewModel.customGeminiKey.collectAsState()
+    val customFootballKey by viewModel.customFootballKey.collectAsState()
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -1502,36 +1503,80 @@ fun MatchDetailsDialog(
                 )
 
                 if (showApiKeyInput) {
-                    var keyInput by remember { mutableStateOf(customGeminiKey) }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    var geminiInput by remember { mutableStateOf(customGeminiKey) }
+                    var footballInput by remember { mutableStateOf(customFootballKey) }
+                    Column(
+                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        OutlinedTextField(
-                            value = keyInput,
-                            onValueChange = { keyInput = it },
-                            placeholder = { Text("Paste AI Studio API Key", fontSize = 11.sp, color = TextMuted) },
-                            singleLine = true,
-                            modifier = Modifier.weight(1f).height(48.dp),
-                            shape = RoundedCornerShape(8.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = GoldAccent,
-                                unfocusedBorderColor = CardNavyLight,
-                                focusedTextColor = TextWhite,
-                                unfocusedTextColor = TextWhite
-                            )
-                        )
-                        Button(
-                            onClick = { 
-                                viewModel.saveCustomGeminiKey(keyInput)
-                                showApiKeyInput = false
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = PitchGreen),
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.height(48.dp)
+                        // Gemini Key Input
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text("Save", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            OutlinedTextField(
+                                value = geminiInput,
+                                onValueChange = { geminiInput = it },
+                                placeholder = { Text("Paste AI Studio API Key", fontSize = 11.sp, color = TextMuted) },
+                                label = { Text("Gemini AI API Key", fontSize = 9.sp, color = GoldAccent) },
+                                singleLine = true,
+                                modifier = Modifier.weight(1f).height(54.dp),
+                                shape = RoundedCornerShape(8.dp),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = GoldAccent,
+                                    unfocusedBorderColor = CardNavyLight,
+                                    focusedTextColor = TextWhite,
+                                    unfocusedTextColor = TextWhite,
+                                    focusedLabelColor = GoldAccent,
+                                    unfocusedLabelColor = TextMuted
+                                )
+                            )
+                            Button(
+                                onClick = { 
+                                    viewModel.saveCustomGeminiKey(geminiInput)
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = PitchGreen),
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier.height(54.dp)
+                            ) {
+                                Text("Save", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                        
+                        // Football API Key Input
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            OutlinedTextField(
+                                value = footballInput,
+                                onValueChange = { footballInput = it },
+                                placeholder = { Text("Paste API-Sports / RapidAPI Key", fontSize = 11.sp, color = TextMuted) },
+                                label = { Text("Football Live API Key", fontSize = 9.sp, color = GoldAccent) },
+                                singleLine = true,
+                                modifier = Modifier.weight(1f).height(54.dp),
+                                shape = RoundedCornerShape(8.dp),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = GoldAccent,
+                                    unfocusedBorderColor = CardNavyLight,
+                                    focusedTextColor = TextWhite,
+                                    unfocusedTextColor = TextWhite,
+                                    focusedLabelColor = GoldAccent,
+                                    unfocusedLabelColor = TextMuted
+                                )
+                            )
+                            Button(
+                                onClick = { 
+                                    viewModel.saveCustomFootballKey(footballInput)
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = PitchGreen),
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier.height(54.dp)
+                            ) {
+                                Text("Save", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
                         }
                     }
                 }
