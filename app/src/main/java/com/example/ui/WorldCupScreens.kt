@@ -1286,6 +1286,10 @@ fun MatchDetailsDialog(
     onFavoriteToggle: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val geminiAnalysis by viewModel.geminiAnalysis.collectAsState()
+    val isGeminiLoading by viewModel.isGeminiLoading.collectAsState()
+    val customGeminiKey by viewModel.customGeminiKey.collectAsState()
+
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
@@ -1318,6 +1322,7 @@ fun MatchDetailsDialog(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
                     .padding(vertical = 4.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
@@ -1425,6 +1430,110 @@ fun MatchDetailsDialog(
                         color = TextMuted,
                         modifier = Modifier.padding(10.dp)
                     )
+                }
+
+                // Gemini AI Tactical Analyst Section
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.EmojiEvents,
+                        contentDescription = "Gemini",
+                        tint = GoldAccent,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        text = "GEMINI AI TACTICAL ANALYST",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = GoldAccent
+                    )
+                }
+
+                if (geminiAnalysis != null) {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = CardNavyLight),
+                        border = BorderStroke(1.dp, GoldAccent.copy(alpha = 0.3f)),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = geminiAnalysis!!,
+                            fontSize = 12.sp,
+                            color = TextWhite,
+                            lineHeight = 16.sp,
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    }
+                } else if (isGeminiLoading) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        CircularProgressIndicator(color = GoldAccent, modifier = Modifier.size(20.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Analyzing match tactics...", fontSize = 12.sp, color = TextMuted)
+                    }
+                } else {
+                    Button(
+                        onClick = { viewModel.fetchMatchPrediction(match) },
+                        colors = ButtonDefaults.buttonColors(containerColor = GoldAccent),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Analyze Match Tactics", color = DeepNavy, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    }
+                }
+
+                // API Key Settings Toggle / Input
+                var showApiKeyInput by remember { mutableStateOf(false) }
+                Text(
+                    text = if (showApiKeyInput) "Hide Key Settings" else "Configure Custom API Key",
+                    fontSize = 10.sp,
+                    color = TextMuted,
+                    modifier = Modifier
+                        .clickable { showApiKeyInput = !showApiKeyInput }
+                        .align(Alignment.CenterHorizontally)
+                        .padding(vertical = 2.dp)
+                )
+
+                if (showApiKeyInput) {
+                    var keyInput by remember { mutableStateOf(customGeminiKey) }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = keyInput,
+                            onValueChange = { keyInput = it },
+                            placeholder = { Text("Paste AI Studio API Key", fontSize = 11.sp, color = TextMuted) },
+                            singleLine = true,
+                            modifier = Modifier.weight(1f).height(48.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = GoldAccent,
+                                unfocusedBorderColor = CardNavyLight,
+                                focusedTextColor = TextWhite,
+                                unfocusedTextColor = TextWhite
+                            )
+                        )
+                        Button(
+                            onClick = { 
+                                viewModel.saveCustomGeminiKey(keyInput)
+                                showApiKeyInput = false
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = PitchGreen),
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.height(48.dp)
+                        ) {
+                            Text("Save", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
                 }
             }
         },
