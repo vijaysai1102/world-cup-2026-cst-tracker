@@ -48,7 +48,7 @@ The application is designed with a hybrid dual-engine scoring architecture:
 ## 📦 Build & Installation Instructions
 
 ### 📲 Install Pre-Compiled APK Directly
-A fully compiled and ready-to-install build of the application is included directly in this repository:
+A fully compiled, ready-to-install build of the application is included directly in this repository (updated to include the Central Time date-alignment fixture schedule fixes):
 👉 **[world-cup-2026-tracker.apk](world-cup-2026-tracker.apk)**
 
 #### How to Install on your Device:

@@ -28,8 +28,13 @@ object CalendarHelper {
             val format = SimpleDateFormat("EEE, MMM d, yyyy HH:mm", Locale.US).apply {
                 timeZone = java.util.TimeZone.getTimeZone("America/New_York")
             }
-            val dateObj = format.parse(dateStr)
+            var dateObj = format.parse(dateStr)
             if (dateObj != null) {
+                if (match.timeET == "00:00") {
+                    val cal = Calendar.getInstance().apply { time = dateObj }
+                    cal.add(Calendar.DAY_OF_YEAR, 1)
+                    dateObj = cal.time
+                }
                 // Calendar ET time parsed successfully (subtraction happens for CST if needed)
                 beginTime.time = dateObj
             }
