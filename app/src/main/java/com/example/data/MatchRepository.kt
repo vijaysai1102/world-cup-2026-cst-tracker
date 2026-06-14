@@ -7,6 +7,7 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -31,6 +32,11 @@ class MatchRepository(
 
     private var apiService: FootballApiService? = null
     private val notificationHelper = NotificationHelper(context)
+
+    // True once a valid API key has triggered a successful real-data fetch;
+    // keeps the local simulation from overwriting live API scores.
+    @Volatile private var useRealApi = false
+    private var apiPollingJob: Job? = null
 
     init {
         setupRetrofit()
@@ -84,15 +90,22 @@ class MatchRepository(
             return
         }
         try {
-            // Query live matches or overall fixtures
-            val response = service.getFixtures(apiKey = apiKey)
-            if (response.response.isNotEmpty()) {
+            // Fetch live matches first; fall back to full fixture list for status sync
+            val liveResponse = service.getLiveFixtures(apiKey = apiKey)
+            val fullResponse = service.getFixtures(apiKey = apiKey)
+            val apiFixtures = (liveResponse.response + fullResponse.response)
+                .distinctBy { it.fixture.id }
+
+            if (apiFixtures.isNotEmpty()) {
+                useRealApi = true
                 val localMatches = matchDao.getAllMatches()
                 val updatedList = localMatches.map { local ->
-                    // Match API entry with local fixture using team names or date
-                    val apiMatch = response.response.find { api ->
-                        api.teams.home.name.contains(local.team1, ignoreCase = true) ||
-                        local.team1.contains(api.teams.home.name, ignoreCase = true)
+                    // Match both home AND away team names to avoid false positives
+                    val apiMatch = apiFixtures.find { api ->
+                        (api.teams.home.name.contains(local.team1, ignoreCase = true) ||
+                         local.team1.contains(api.teams.home.name, ignoreCase = true)) &&
+                        (api.teams.away.name.contains(local.team2, ignoreCase = true) ||
+                         local.team2.contains(api.teams.away.name, ignoreCase = true))
                     }
                     if (apiMatch != null) {
                         local.copy(
@@ -195,11 +208,29 @@ class MatchRepository(
         matchDao.updateFavorite(matchId, isFav)
     }
 
-    // Simulate match timeline events such as Kickoffs, Goals, Cards, Fulltime results
+    // Starts a continuous background loop that polls the real API every 60 seconds.
+    // Cancels any previous polling loop. Simulation is suppressed while this is active.
+    fun startContinuousPolling(apiKey: String) {
+        if (apiKey.isBlank() || apiKey == "MY_FOOTBALL_API_KEY") return
+        apiPollingJob?.cancel()
+        apiPollingJob = scope.launch {
+            while (true) {
+                refreshLiveScores(apiKey)
+                delay(60_000)
+            }
+        }
+    }
+
+    // Simulate match timeline events such as Kickoffs, Goals, Cards, Fulltime results.
+    // Skips all simulation work when a real API key is active to avoid overwriting live data.
     private fun startLiveScoreSimulation() {
         scope.launch {
             delay(5000) // wait for database to fully load/seed
             while (true) {
+                if (useRealApi) {
+                    delay(15000)
+                    continue
+                }
                 try {
                     val list = matchDao.getAllMatches()
                     if (list.isNotEmpty()) {

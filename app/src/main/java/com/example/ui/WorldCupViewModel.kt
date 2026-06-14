@@ -159,8 +159,6 @@ class WorldCupViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun triggerApiRefresh(apiKey: String) {
-        viewModelScope.launch {
-            repository.refreshLiveScores(apiKey)
-        }
+        repository.startContinuousPolling(apiKey)
     }
 }
