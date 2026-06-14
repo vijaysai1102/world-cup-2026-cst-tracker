@@ -1,6 +1,9 @@
 package com.example.data
 
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import android.util.Log
 import com.example.ui.NotificationHelper
 import com.squareup.moshi.Moshi
@@ -82,52 +85,75 @@ class MatchRepository(
         }
     }
 
-    // Refresh matches from live Football API if key is supplied
+    private fun isNetworkAvailable(): Boolean {
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val caps = cm.getNetworkCapabilities(cm.activeNetwork ?: return false) ?: return false
+            caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        } else {
+            @Suppress("DEPRECATION")
+            cm.activeNetworkInfo?.isConnected == true
+        }
+    }
+
+    // Refresh matches from live Football API if key is supplied.
+    // Retries up to 3 times with exponential backoff on network errors.
     suspend fun refreshLiveScores(apiKey: String) {
         val service = apiService ?: return
         if (apiKey.isEmpty() || apiKey == "MY_FOOTBALL_API_KEY") {
             Log.d("MatchRepository", "No valid football API key. Skipping network refresh.")
             return
         }
-        try {
-            // Fetch live matches first; fall back to full fixture list for status sync
-            val liveResponse = service.getLiveFixtures(apiKey = apiKey)
-            val fullResponse = service.getFixtures(apiKey = apiKey)
-            val apiFixtures = (liveResponse.response + fullResponse.response)
-                .distinctBy { it.fixture.id }
-
-            if (apiFixtures.isNotEmpty()) {
-                useRealApi = true
-                val localMatches = matchDao.getAllMatches()
-                val updatedList = localMatches.map { local ->
-                    // Match both home AND away team names to avoid false positives
-                    val apiMatch = apiFixtures.find { api ->
-                        (api.teams.home.name.contains(local.team1, ignoreCase = true) ||
-                         local.team1.contains(api.teams.home.name, ignoreCase = true)) &&
-                        (api.teams.away.name.contains(local.team2, ignoreCase = true) ||
-                         local.team2.contains(api.teams.away.name, ignoreCase = true))
-                    }
-                    if (apiMatch != null) {
-                        local.copy(
-                            team1Score = apiMatch.goals.home,
-                            team2Score = apiMatch.goals.away,
-                            status = when (apiMatch.fixture.status.short) {
-                                "NS" -> "UPCOMING"
-                                "1H", "2H", "HT" -> "LIVE"
-                                "FT", "AET", "PEN" -> "FINISHED"
-                                else -> local.status
-                            },
-                            minute = apiMatch.fixture.status.elapsed?.toString()
-                        )
-                    } else {
-                        local
-                    }
-                }
-                matchDao.insertAll(updatedList)
-            }
-        } catch (e: Exception) {
-            Log.e("MatchRepository", "Error refreshing live scores from internet", e)
+        if (!isNetworkAvailable()) {
+            Log.d("MatchRepository", "No network available, skipping API refresh.")
+            return
         }
+        var delayMs = 2000L
+        for (attempt in 1..3) {
+            try {
+                // Fetch live matches first; merge with full fixture list for status sync
+                val liveResponse = service.getLiveFixtures(apiKey = apiKey)
+                val fullResponse = service.getFixtures(apiKey = apiKey)
+                val apiFixtures = (liveResponse.response + fullResponse.response)
+                    .distinctBy { it.fixture.id }
+
+                if (apiFixtures.isNotEmpty()) {
+                    useRealApi = true
+                    val localMatches = matchDao.getAllMatches()
+                    val updatedList = localMatches.map { local ->
+                        // Require both home AND away team names to match to avoid false positives
+                        val apiMatch = apiFixtures.find { api ->
+                            (api.teams.home.name.contains(local.team1, ignoreCase = true) ||
+                             local.team1.contains(api.teams.home.name, ignoreCase = true)) &&
+                            (api.teams.away.name.contains(local.team2, ignoreCase = true) ||
+                             local.team2.contains(api.teams.away.name, ignoreCase = true))
+                        }
+                        if (apiMatch != null) {
+                            local.copy(
+                                team1Score = apiMatch.goals.home,
+                                team2Score = apiMatch.goals.away,
+                                status = when (apiMatch.fixture.status.short) {
+                                    "NS" -> "UPCOMING"
+                                    "1H", "2H", "HT" -> "LIVE"
+                                    "FT", "AET", "PEN" -> "FINISHED"
+                                    else -> local.status
+                                },
+                                minute = apiMatch.fixture.status.elapsed?.toString()
+                            )
+                        } else {
+                            local
+                        }
+                    }
+                    matchDao.insertAll(updatedList)
+                }
+                return // success
+            } catch (e: Exception) {
+                Log.w("MatchRepository", "API refresh attempt $attempt/3 failed: ${e.message}")
+                if (attempt < 3) delay(delayMs)
+                delayMs *= 2
+            }
+        }
+        Log.e("MatchRepository", "All API refresh attempts exhausted")
     }
 
     // Dynamic Standings calculation based on played matches
@@ -237,79 +263,67 @@ class MatchRepository(
                         // Find matches that are currently LIVE
                         var liveMatches = list.filter { it.status == "LIVE" }
                         
-                        // If no matches are live, let's randomly start 2-3 group matches!
+                        // If no matches are live, randomly start 2-3 group matches
                         if (liveMatches.isEmpty()) {
                             val groupMatches = list.filter { it.status == "UPCOMING" && it.group.length == 1 }
                             if (groupMatches.isNotEmpty()) {
-                                val toLive = groupMatches.shuffled().take(3)
-                                toLive.forEach { match ->
-                                    val startMatch = match.copy(
-                                        status = "LIVE",
-                                        team1Score = 0,
-                                        team2Score = 0,
-                                        minute = "1"
-                                    )
-                                    matchDao.updateMatch(startMatch)
-                                    
-                                    // Kickoff alert for favorite team
-                                    if (startMatch.isFavorite) {
-                                        notificationHelper.showNotification(
-                                            title = "⚽ Match KICKOFF!",
-                                            message = "${startMatch.team1} vs ${startMatch.team2} has kicked off in CST!",
-                                            matchId = startMatch.id
-                                        )
-                                    }
+                                val startedMatches = groupMatches.shuffled().take(3).map { match ->
+                                    match.copy(status = "LIVE", team1Score = 0, team2Score = 0, minute = "1")
                                 }
-                                liveMatches = toLive
+                                matchDao.updateMatches(startedMatches)
+                                startedMatches.filter { it.isFavorite }.forEach { m ->
+                                    notificationHelper.showNotification(
+                                        title = "⚽ Match KICKOFF!",
+                                        message = "${m.team1} vs ${m.team2} has kicked off in CST!",
+                                        matchId = m.id
+                                    )
+                                }
+                                liveMatches = startedMatches
                             }
                         }
 
-                        // Increment score or progress time of currently live games
+                        // Increment score or progress time — accumulate all writes then flush in one transaction
+                        val matchUpdates = mutableListOf<Match>()
+                        val pendingNotifications = mutableListOf<Triple<String, String, Int>>()
+
                         liveMatches.forEach { match ->
                             val currentMin = match.minute?.toIntOrNull() ?: 0
                             if (currentMin >= 90) {
-                                // Finish the game
-                                val finishedMatch = match.copy(
-                                    status = "FINISHED",
-                                    minute = "FT"
-                                )
-                                matchDao.updateMatch(finishedMatch)
-                                
-                                // Full time alert for favorite team
+                                val finishedMatch = match.copy(status = "FINISHED", minute = "FT")
+                                matchUpdates.add(finishedMatch)
                                 if (finishedMatch.isFavorite) {
-                                    notificationHelper.showNotification(
-                                        title = "🏁 Full Time Result",
-                                        message = "FT: ${finishedMatch.team1} ${finishedMatch.team1Score} - ${finishedMatch.team2Score} ${finishedMatch.team2}",
-                                        matchId = finishedMatch.id
-                                    )
+                                    pendingNotifications.add(Triple(
+                                        "🏁 Full Time Result",
+                                        "FT: ${finishedMatch.team1} ${finishedMatch.team1Score} - ${finishedMatch.team2Score} ${finishedMatch.team2}",
+                                        finishedMatch.id
+                                    ))
                                 }
                             } else {
-                                // Progress minute
                                 val nextMin = currentMin + Random.nextInt(5, 12)
                                 val updatedMin = if (nextMin > 90) 90 else nextMin
-                                
-                                // Check for goals or cards
+
                                 var t1Score = match.team1Score ?: 0
                                 var t2Score = match.team2Score ?: 0
                                 var eventTriggered = false
                                 var eventTitle = ""
                                 var eventMessage = ""
 
+                                // ~12% home goal, ~12% away goal, ~2% red card per poll
                                 val eventChance = Random.nextInt(100)
                                 when {
-                                    eventChance < 15 -> { // Goal Home
+                                    eventChance < 12 -> {
                                         t1Score++
                                         eventTriggered = true
                                         eventTitle = "⚽ GOAL! - ${match.team1}"
-                                        eventMessage = "${match.team1} scores! New score: ${match.team1} $t1Score - $t2Score ${match.team2} (${updatedMin}')"
+                                        eventMessage = "${match.team1} scores! ${match.team1} $t1Score - $t2Score ${match.team2} (${updatedMin}')"
                                     }
-                                    eventChance in 15..29 -> { // Goal Away
+                                    eventChance in 12..23 -> {
                                         t2Score++
                                         eventTriggered = true
                                         eventTitle = "⚽ GOAL! - ${match.team2}"
-                                        eventMessage = "${match.team2} scores! New score: ${match.team1} $t1Score - $t2Score ${match.team2} (${updatedMin}')"
+                                        eventMessage = "${match.team2} scores! ${match.team1} $t1Score - $t2Score ${match.team2} (${updatedMin}')"
                                     }
-                                    eventChance in 30..35 -> { // Red Card
+                                    eventChance in 24..25 -> {
                                         eventTriggered = true
                                         val team = if (Random.nextBoolean()) match.team1 else match.team2
                                         eventTitle = "🔴 RED CARD!"
@@ -322,16 +336,17 @@ class MatchRepository(
                                     team2Score = t2Score,
                                     minute = updatedMin.toString()
                                 )
-                                matchDao.updateMatch(updatedMatch)
+                                matchUpdates.add(updatedMatch)
 
                                 if (eventTriggered && updatedMatch.isFavorite) {
-                                    notificationHelper.showNotification(
-                                        title = eventTitle,
-                                        message = eventMessage,
-                                        matchId = updatedMatch.id
-                                    )
+                                    pendingNotifications.add(Triple(eventTitle, eventMessage, updatedMatch.id))
                                 }
                             }
+                        }
+
+                        if (matchUpdates.isNotEmpty()) matchDao.updateMatches(matchUpdates)
+                        pendingNotifications.forEach { (title, msg, id) ->
+                            notificationHelper.showNotification(title, msg, id)
                         }
                     }
                 } catch (e: Exception) {

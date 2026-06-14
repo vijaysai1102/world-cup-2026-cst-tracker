@@ -19,6 +19,12 @@ object GeminiService {
         .readTimeout(30, TimeUnit.SECONDS)
         .build()
 
+    // Valid Gemini model IDs in preference order
+    private val modelCandidates = listOf("gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash")
+
+    // Skips straight to the last model that worked, avoiding full retry chains on every request
+    @Volatile private var lastWorkingModel: String? = null
+
     suspend fun getMatchAnalysis(
         team1: String,
         team2: String,
@@ -61,10 +67,13 @@ object GeminiService {
         }
         val requestBody = jsonBody.toString().toRequestBody("application/json".toMediaType())
 
-        val modelCandidates = listOf("gemini-2.5-flash", "gemini-1.5-flash", "gemini-flash-latest", "gemini-3.5-flash")
+        // Try the last known-good model first; fall back through the full list otherwise
+        val orderedCandidates = lastWorkingModel
+            ?.let { working -> listOf(working) + modelCandidates.filter { it != working } }
+            ?: modelCandidates
         var lastErrorMsg = ""
 
-        for (modelName in modelCandidates) {
+        for (modelName in orderedCandidates) {
             try {
                 Log.d(TAG, "Attempting Gemini analysis with model: $modelName")
                 val endpoint = "https://generativelanguage.googleapis.com/v1beta/models/$modelName:generateContent?key=$apiKey"
@@ -110,6 +119,7 @@ object GeminiService {
                 }
 
                 if (result != null) {
+                    lastWorkingModel = modelName
                     return@withContext result
                 }
             } catch (e: Exception) {

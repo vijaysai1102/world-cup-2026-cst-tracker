@@ -14,6 +14,10 @@ class NotificationHelper(private val context: Context) {
     private val channelName = "World Cup Live Scores"
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
+    // Suppress identical event notifications fired within 30 seconds of each other
+    private val recentNotifications = HashMap<String, Long>()
+    private val dedupeWindowMs = 30_000L
+
     init {
         createChannel()
     }
@@ -33,6 +37,11 @@ class NotificationHelper(private val context: Context) {
     }
 
     fun showNotification(title: String, message: String, matchId: Int) {
+        val key = "$matchId:$title"
+        val now = System.currentTimeMillis()
+        if (now - (recentNotifications[key] ?: 0L) < dedupeWindowMs) return
+        recentNotifications[key] = now
+
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             putExtra("MATCH_ID", matchId)

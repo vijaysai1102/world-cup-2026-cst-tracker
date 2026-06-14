@@ -112,8 +112,15 @@ class WorldCupViewModel(application: Application) : AndroidViewModel(application
 
     init {
         val prefs = application.getSharedPreferences("api_settings", android.content.Context.MODE_PRIVATE)
-        customGeminiKey.value = prefs.getString("custom_gemini_key", "") ?: ""
-        customFootballKey.value = prefs.getString("custom_football_key", "") ?: ""
+        val geminiKey = prefs.getString("custom_gemini_key", "") ?: ""
+        val footballKey = prefs.getString("custom_football_key", "") ?: ""
+        // Treat placeholder values as absent so they never reach API calls
+        if (geminiKey.isNotBlank() && geminiKey != "MY_GEMINI_API_KEY") {
+            customGeminiKey.value = geminiKey
+        }
+        if (footballKey.isNotBlank() && footballKey != "MY_FOOTBALL_API_KEY") {
+            customFootballKey.value = footballKey
+        }
     }
 
     fun saveCustomGeminiKey(key: String) {
